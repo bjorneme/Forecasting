@@ -6,7 +6,7 @@ from DataPreparation import DataPreparation
 
 
 class ForcastingSystem:
-    def __init__(self, filepath, area_number, model=None, model_filepath=None):
+    def __init__(self, filepath, area_number, model, model_filepath=None):
         self.data_preparation = DataPreparation(filepath, area_number)
         self.model = model
 
@@ -20,7 +20,7 @@ class ForcastingSystem:
         X_train, y_train, X_test, y_test = self.data_preparation.prepare_data()
 
         # Step 2: Train the model
-        # TODO
+        self.model.train_model(X_train, y_train)
 
         # Step 3: Save the trained model to a file
         self.save_model()

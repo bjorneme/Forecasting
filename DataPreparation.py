@@ -33,6 +33,7 @@ class DataPreparation:
         data.set_index('timestamp', inplace=True)
 
         return data
+
     
     def feature_engineering(self, data):
         # Add lag features before any splitting
@@ -52,7 +53,7 @@ class DataPreparation:
         features = [f'NO{self.area_number}_temperature', 'hour_of_day', 'day_of_week', 'month'] + [f'lag_{i}' for i in range(1, self.lags + 1)]
         target = f'NO{self.area_number}_consumption'
 
-        # Normalize and split the dataset
+        # Normalize the data
         scaler = MinMaxScaler(feature_range=(-1,1))
         X_train = scaler.fit_transform(train_df[features])
         y_train = train_df[target].values

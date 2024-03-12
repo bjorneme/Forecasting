@@ -38,31 +38,3 @@ class ForcastingSystem:
             print(f"Model loaded from {self.model_filepath}")
         except FileNotFoundError:
             print(f"No pre-trained model found at {self.model_filepath}. Starting training from scratch.")
-
-    def compare_models(self, model_filepaths, X_test, y_test):
-        # Compares multiple models
-        model_predictions = []
-        model_names = []
-
-        for path in model_filepaths:
-            model = joblib.load(path)
-            predictions = model.predict(X_test)
-            model_predictions.append(predictions)
-            model_names.append(path.split('/')[-1])
-
-        self.visualize_results(y_test, model_predictions, model_names)
-
-def visualize_results(self, y_test, model_predictions, model_names):
-    # Visualizes the predictions of multiple models.
-    
-    plt.figure(figsize=(10, 6))
-    plt.plot(y_test.values, label='True Values', color='k', lw=2)
-    
-    for predictions, name in zip(model_predictions, model_names):
-        plt.plot(predictions, label=name)
-    
-    plt.title('Model Comparison')
-    plt.xlabel('Time')
-    plt.ylabel('Predicted Value')
-    plt.legend()
-    plt.show()

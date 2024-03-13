@@ -46,10 +46,10 @@ class DataPreparation:
         # Select Features
         temperature_column = f'NO{self.area_number}_temperature'
         consumption_column = f'NO{self.area_number}_consumption'
-        features = data[['month', 'day', 'hour', temperature_column, consumption_column]]
+        self.features = data[['month', 'day', 'hour', temperature_column, consumption_column]]
 
         # Normalize the data
-        self.scaled_features = self.scaler.fit_transform(features)
+        self.scaled_features = self.scaler.fit_transform(self.features)
 
         # Create lags
         X, y = self.add_lag_features(self.scaled_features, self.lags)
@@ -97,5 +97,27 @@ class DataPreparation:
         plt.legend()
         plt.show()
 
+    def visulaize_data(self):
+
+        # Plotting electricity consumption and temperature trends for NO1
+        fig, ax1 = plt.subplots(figsize=(10, 5))
+
+        # Plot consumption
+        consumption_col = f'NO{self.area_number}_consumption'
+        ax1.plot(self.features[consumption_col], label=f'Area {self.area_number} Consumption')
+        ax1.set_ylabel('Consumption')
+        ax1.legend()
+    
+        ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
+
+        # Plot temperature
+        temperature_col = f'NO{self.area_number}_temperature'
+        ax2.plot(self.features[temperature_col], label=f'Area {self.area_number} Temperature', color='red')
+        ax2.set_ylabel('Temperature')
+        ax2.legend()
+
+        fig.tight_layout()  # otherwise the right y-label is slightly clipped
+        plt.title(f'NO{self.area_number} Consumption and Temperature Trends Over Time')
+        plt.show()  
         
 

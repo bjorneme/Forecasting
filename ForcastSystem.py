@@ -26,13 +26,15 @@ class ForcastingSystem:
         # Step 1: Prepare the data
         X_train, y_train, X_test, y_test = self.data_preparation.prepare_data()
 
+        self.data_preparation.visulaize_data()
+
         # Step 2: Train the model
         self.train_model(X_train, y_train)
 
         # Step 3: Evaluate the model
         self.evaluate_model(X_test, y_test)
 
-        # Step 3: Save the trained model to a file
+        # Step 4: Save the trained model to a file
         self.save_model()
 
     def train_model(self, X_train, y_train):

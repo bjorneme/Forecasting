@@ -39,7 +39,7 @@ class ForcastingSystem:
         self.loss_history = []
 
         train_dataset = TensorDataset(X_train, y_train)
-        train_loader = DataLoader(train_dataset, batch_size=256, shuffle=False)
+        train_loader = DataLoader(train_dataset, batch_size=64, shuffle=False)
 
         loss_function = nn.MSELoss()
         optimizer = torch.optim.Adam(self.model.parameters(), self.learning_rate)

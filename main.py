@@ -17,6 +17,6 @@ if __name__ == "__main__":
         model = model,
         num_epochs = 10,
         learning_rate = 0.001,
-        model_filepath = "lstm_model.pth"
+        model_filepath = "models/pre_trained_models/lstm_model.pth"
     )
     system.run_system()

@@ -9,15 +9,14 @@ if __name__ == "__main__":
     output_size = 1
     num_layers = 2
 
-    # model = LSTMModel(input_size, hidden_layer_size, output_size, num_layers)
-    model = CNNModel()
+    model = LSTMModel(input_size, hidden_layer_size, output_size, num_layers)
     
     system = ForcastingSystem(
         filepath="consumption_and_temperatures.csv",
         area_number=1,
         model = model,
-        num_epochs = 25,
+        num_epochs = 10,
         learning_rate = 0.001,
-        model_filepath = "models/pre_trained_models/cnn_model.pth"
+        model_filepath = "lstm_model.pth"
     )
     system.run_system()

@@ -87,5 +87,15 @@ class DataPreparation:
         plt.legend()
         plt.show()
 
+    def visualize_learning_progress(self,loss_history):
+        # Plot both the loss
+        plt.figure(figsize=(10, 6))
+        plt.plot(loss_history, label='Training Loss')
+        plt.title('Loss over Epochs')
+        plt.xlabel('Epoch')
+        plt.ylabel('Loss')
+        plt.legend()
+        plt.show()
+
         
 

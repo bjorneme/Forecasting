@@ -11,9 +11,11 @@ from DataPreparation import DataPreparation
 
 
 class ForcastingSystem:
-    def __init__(self, filepath, area_number, model=None, model_filepath=None):
+    def __init__(self, filepath, area_number, model, num_epochs, learning_rate, model_filepath=None):
         self.data_preparation = DataPreparation(filepath, area_number)
         self.model = model
+        self.num_epochs = num_epochs
+        self.learning_rate = learning_rate
 
         # Load a pretrained model
         self.model_filepath = model_filepath
@@ -39,10 +41,9 @@ class ForcastingSystem:
         train_loader = DataLoader(train_dataset, batch_size=64, shuffle=False)
 
         loss_function = nn.MSELoss()
-        optimizer = torch.optim.Adam(self.model.parameters(), lr=0.001)
+        optimizer = torch.optim.Adam(self.model.parameters(), self.learning_rate)
 
-        epochs = 10
-        for epoch in range(epochs):
+        for epoch in range(self.num_epochs):
             self.model.train()
             for seq, labels in train_loader:
                 optimizer.zero_grad()

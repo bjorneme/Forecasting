@@ -1,3 +1,4 @@
+from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -10,6 +11,7 @@ class DataPreparation:
         self.filepath = filepath
         self.area_number = area_number
         self.lags = lags
+        self.scaler = MinMaxScaler(feature_range=(-1,1))
 
     def prepare_data(self):
         # Load data
@@ -47,11 +49,10 @@ class DataPreparation:
         features = data[['month', 'day', 'hour', temperature_column, consumption_column]]
 
         # Normalize the data
-        scaler = MinMaxScaler(feature_range=(-1,1))
-        scaled_features = scaler.fit_transform(features)
+        self.scaled_features = self.scaler.fit_transform(features)
 
         # Create lags
-        X, y = self.add_lag_features(scaled_features, self.lags)
+        X, y = self.add_lag_features(self.scaled_features, self.lags)
 
         # Split and convert to tensors
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=24, shuffle=False)
@@ -72,6 +73,19 @@ class DataPreparation:
             X.append(seq_x)
             y.append(seq_y)
         return np.array(X), np.array(y)
+    
+    def visualize(self, predictions):
+        # Inversely scale the predictions
+        actual_predictions = self.scaler.inverse_transform(np.hstack((np.zeros((len(predictions), 4)), np.array(predictions).reshape(-1, 1))))[:, -1]
+
+        # Plotting actual vs predicted
+        plt.figure(figsize=(10,6))
+        # Extract the actual 'NO1_consumption' values for the last part of the dataset for plotting
+        actual_consumption = self.scaler.inverse_transform(self.scaled_features)[-len(predictions):, -1]
+        plt.plot(actual_consumption, label='Actual Consumption')
+        plt.plot(actual_predictions, label='Predicted Consumption')
+        plt.legend()
+        plt.show()
 
         
 

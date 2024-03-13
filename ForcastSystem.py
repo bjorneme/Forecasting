@@ -1,5 +1,7 @@
 import joblib
+import numpy as np
 import pandas as pd
+from sklearn.preprocessing import MinMaxScaler
 import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
@@ -26,7 +28,7 @@ class ForcastingSystem:
         self.train_model(X_train, y_train)
 
         # Step 3: Evaluate the model
-        # TODO
+        self.evaluate_model(X_test, y_test)
 
         # Step 3: Save the trained model to a file
         self.save_model()
@@ -50,7 +52,20 @@ class ForcastingSystem:
                 optimizer.step()
             print(f'Epoch {epoch+1}, Loss: {loss.item()}')
 
-    
+    def evaluate_model(self, X_test, y_test):
+
+        train_dataset = TensorDataset(X_test, y_test)
+        train_loader = DataLoader(train_dataset, batch_size=1)
+
+        self.model.eval()
+        predictions = []
+        with torch.no_grad():
+            for seq, _ in train_loader:
+                y_test_pred = self.model(seq)
+                predictions.append(y_test_pred.numpy().flatten()[0])
+
+        self.data_preparation.visualize(predictions)
+
     def save_model(self):
         # Saves the trained model
         if self.model_filepath:

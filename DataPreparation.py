@@ -11,7 +11,7 @@ class DataPreparation:
         self.filepath = filepath
         self.area_number = area_number
         self.lags = lags
-        self.scaler = MinMaxScaler(feature_range=(-1,1))
+        self.scaler = MinMaxScaler(feature_range=(0,1))
 
     def prepare_data(self):
         # Load data

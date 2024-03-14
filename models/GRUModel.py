@@ -2,9 +2,9 @@ import torch
 import torch.nn as nn
 
 # GRU Model
-class GRUNet(nn.Module):
+class GRUModel(nn.Module):
     def __init__(self, input_dim, hidden_dim, output_dim, layers):
-        super(GRUNet, self).__init__()
+        super(GRUModel, self).__init__()
         self.hidden_dim = hidden_dim
         self.layers = layers
         self.gru = nn.GRU(input_dim, hidden_dim, layers, batch_first=True)

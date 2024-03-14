@@ -123,13 +123,14 @@ class ForcastingSystem:
     def save_model(self):
         # Saves the trained model
         if self.model_filepath:
-            joblib.dump(self.model, self.model_filepath)
+            torch.save(self.model.state_dict(), self.model_filepath)
             print(f"Model saved to {self.model_filepath}")
 
     def load_model(self):
         # Loads a pre-trained model
         try:
-            self.model = joblib.load(self.model_filepath)
+            self.model.load_state_dict(torch.load(self.model_filepath))
+            self.model.eval()
             print(f"Model loaded from {self.model_filepath}")
         except FileNotFoundError:
             print(f"No pre-trained model found at {self.model_filepath}. Starting training from scratch.")

@@ -1,4 +1,5 @@
 import joblib
+from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
@@ -9,7 +10,7 @@ from torch.utils.data import DataLoader, TensorDataset
 from DataPreparation import DataPreparation
 
 
-class ForcastingSystem:
+class ForecastingSystem:
     def __init__(self, filepath, area_number, model, num_epochs, learning_rate, model_filepath=None):
         self.data_preparation = DataPreparation(filepath, area_number)
         self.model = model
@@ -19,12 +20,14 @@ class ForcastingSystem:
         # Load a pretrained model
         self.model_filepath = model_filepath
         if self.model_filepath:
-            self.load_model()
+            self.load_model(self.model_filepath)
 
     def run_system(self):
         # Step 1: Prepare the data
         X_train, y_train, X_test, y_test = self.data_preparation.prepare_data()
-
+        self.X_test = X_test
+        self.y_test = y_test
+        
         self.data_preparation.visulaize_data()
 
         # Step 2: Train the model
@@ -44,7 +47,7 @@ class ForcastingSystem:
         train_dataset = TensorDataset(X_train, y_train)
         
         # Create data loader for batch processing and shuffling
-        train_loader = DataLoader(train_dataset, batch_size=64, shuffle=False)
+        train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
 
         # Define loss function as MSE
         loss_function = nn.MSELoss()
@@ -120,17 +123,50 @@ class ForcastingSystem:
         # Visualize the predictions vs. actual consumption
         self.data_preparation.visualize(predictions)
 
+        # Return the populated list of predictions
+        return predictions
+
     def save_model(self):
         # Saves the trained model
         if self.model_filepath:
             torch.save(self.model.state_dict(), self.model_filepath)
             print(f"Model saved to {self.model_filepath}")
 
-    def load_model(self):
+    def load_model(self, model_filepath):
         # Loads a pre-trained model
         try:
-            self.model.load_state_dict(torch.load(self.model_filepath))
+            self.model.load_state_dict(torch.load(model_filepath))
             self.model.eval()
-            print(f"Model loaded from {self.model_filepath}")
+            print(f"Model loaded from {model_filepath}")
         except FileNotFoundError:
-            print(f"No pre-trained model found at {self.model_filepath}. Starting training from scratch.")
+            print(f"No pre-trained model found at {model_filepath}. Starting training from scratch.")
+
+    def evaluate_and_plot_models(self, model_paths, models):
+        plt.figure(figsize=(10, 6))
+
+        for model_name, model in models.items():
+            self.model = model
+            model_path = model_paths.get(model_name)
+            if model_path:
+                try:
+                    self.load_model(model_path)
+                    # Add a print statement here to check model parameters
+                    # For example: print(next(model.parameters()).data)
+                    print(f"Model {model_name} loaded successfully from {model_path}.")
+                except FileNotFoundError:
+                    print(f"Model file not found at {model_path}. Skipping {model_name}.")
+                    continue
+                
+                # Use the loaded model for evaluation
+                predictions = self.evaluate_model(self.X_test, self.y_test)
+                print(predictions)
+                plt.plot(predictions, label=model_name)
+        
+        plt.title("Model Comparison")
+        plt.xlabel("Time")
+        plt.ylabel("Value")
+        plt.legend()
+        plt.show()
+
+
+        

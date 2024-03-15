@@ -1,27 +1,36 @@
-from ForcastSystem import ForcastingSystem
+from ForecastingSystem import ForecastingSystem
 from models.LSTMModel import LSTMModel
 from models.CNNModel import CNNModel
 from models.GRUModel import GRUModel
+from models.MLPModel import MLPModel
 from models.TransformerModel import TransformerModel
 
 # The main function
 if __name__ == "__main__":
     input_size = 4  # month, day, hour, temperature
-    num_heads = 2
-    num_encoder_layers = 2
-    num_decoder_layers = 2
-    dim_feedforward = 64
-    max_seq_length = 24
-    output_size = 1
 
-    model = TransformerModel(input_size, num_heads, num_encoder_layers, num_decoder_layers, dim_feedforward, max_seq_length, output_size)
+    model = MLPModel(4, 32, 1)
     
-    system = ForcastingSystem(
+    system = ForecastingSystem(
         filepath="consumption_and_temperatures.csv",
         area_number=1,
         model = model,
-        num_epochs = 1,
+        num_epochs = 0,
         learning_rate = 0.001,
-        model_filepath = "models/pre_trained_models/transformer_model.pth"
+        model_filepath = "models/pre_trained_models/mlp_model.pth"
     )
     system.run_system()
+
+    # Example usage
+    model_paths = {
+        "LSTM": "models/pre_trained_models/lstm_model.pth",
+        "MLP": "models/pre_trained_models/mlp_model.pth",
+        # Add other models accordingly
+    }
+
+    models = {
+            "LSTM": LSTMModel(4, 24, 1, 2),
+            "MLP": MLPModel(4, 32, 1),
+    }
+
+    system.evaluate_and_plot_models(model_paths, models)

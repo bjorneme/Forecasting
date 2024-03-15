@@ -6,3 +6,4 @@
 4. Fix plotting function
 5. Implement MLP
 6. Implement CNN
+7. Implement weather as "proxy"

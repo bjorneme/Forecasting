@@ -37,8 +37,8 @@ class DataPreparation:
         X, y = self.add_lag_features(scaled_features, self.lags)
 
         # Splitting into training, validation, and test sets
-        X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.3, random_state=42)
-        X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=24, random_state=42)
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=24, shuffle=False)
+        X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=24, shuffle=False)
 
         X_train_tensor = torch.tensor(X_train, dtype=torch.float32)
         y_train_tensor = torch.tensor(y_train, dtype=torch.float32)

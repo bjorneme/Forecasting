@@ -163,9 +163,15 @@ class ForecastingSystem:
             print(f"No pre-trained model found at {model_filepath}. Starting training from scratch.")
 
     def evaluate_and_plot_models(self, model_paths, models):
-        plt.figure(figsize=(10, 6))
+        # Create figure and axes for subplots
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 5))
 
-        plt.plot(self.y_test, label='Actual', color='black', linewidth=2)
+        # Plot actual values on the first subplot
+        ax1.plot(self.y_test, label='Actual', color='black', linewidth=2)
+        ax1.set_title("Model Predictions vs Actual")
+        ax1.set_xlabel("Time")
+        ax1.set_ylabel("Value")
+        ax1.legend()
 
         for model_name, model in models.items():
             self.model = model
@@ -173,8 +179,6 @@ class ForecastingSystem:
             if model_path:
                 try:
                     self.load_model(model_path)
-                    # Add a print statement here to check model parameters
-                    # For example: print(next(model.parameters()).data)
                     print(f"Model {model_name} loaded successfully from {model_path}.")
                 except FileNotFoundError:
                     print(f"Model file not found at {model_path}. Skipping {model_name}.")
@@ -182,13 +186,19 @@ class ForecastingSystem:
                 
                 # Use the loaded model for evaluation
                 predictions = self.evaluate_model(self.X_test, self.y_test)
-                plt.plot(predictions, label=model_name)
-        
-        plt.title("Model Comparison")
-        plt.xlabel("Time")
-        plt.ylabel("Value")
-        plt.legend()
+                ax1.plot(predictions, label=f'{model_name} Predictions')
+
+                # Calculate error
+                error = np.abs(predictions - self.y_test.squeeze().numpy())  # Adjust if necessary
+
+                # Plot error on the second subplot
+                ax2.plot(error, label=f'{model_name} Error')
+
+        ax2.set_title("Error for Each Model")
+        ax2.set_xlabel("Time")
+        ax2.set_ylabel("Absolute Error")
+        ax2.legend()
+
+        # Show the plots
+        plt.tight_layout()
         plt.show()
-
-
-        

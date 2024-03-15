@@ -9,15 +9,15 @@ from models.TransformerModel import TransformerModel
 if __name__ == "__main__":
     input_size = 4  # month, day, hour, temperature
 
-    model = MLPModel(4, 32, 1)
+    model = LSTMModel(4, 24, 1, 2)
     
     system = ForecastingSystem(
         filepath="consumption_and_temperatures.csv",
         area_number=1,
         model = model,
-        num_epochs = 10,
+        num_epochs = 0,
         learning_rate = 0.001,
-        model_filepath = "models/pre_trained_models/mlp_model.pth"
+        model_filepath = "models/pre_trained_models/lstm_model.pth"
     )
     system.run_system()
 

@@ -24,14 +24,14 @@ class ForecastingSystem:
 
     def run_system(self):
         # Step 1: Prepare the data
-        X_train, y_train, X_test, y_test = self.data_preparation.prepare_data()
+        X_train, y_train, X_val, y_val, X_test, y_test = self.data_preparation.prepare_data()
         self.X_test = X_test
         self.y_test = y_test
         
         self.data_preparation.visulaize_data()
 
         # Step 2: Train the model
-        self.train_model(X_train, y_train)
+        self.train_model(X_train, y_train, X_val, y_val)
 
         # Step 3: Evaluate the model
         self.evaluate_model(X_test, y_test)
@@ -39,9 +39,10 @@ class ForecastingSystem:
         # Step 4: Save the trained model to a file
         self.save_model()
 
-    def train_model(self, X_train, y_train):
+    def train_model(self, X_train, y_train, X_val, y_val):
         # Initialize a list to store loss
-        self.loss_history = []
+        self.train_loss_history = []
+        self.val_loss_history = []
         
         # Create dataset from the training data
         train_dataset = TensorDataset(X_train, y_train)
@@ -85,14 +86,34 @@ class ForecastingSystem:
 
             # Append average loss of the epoch. Used for visualization
             avg_loss = sum(self.loss_history_epoch)/len(train_loader)
-            self.loss_history.append(avg_loss)
-
-
-            print(f'Epoch {epoch+1}, Loss: {avg_loss}')
+            self.train_loss_history.append(avg_loss)
+            # At the end of each epoch, validate the model
+            val_loss = self.validate_model(X_val, y_val)
+            self.val_loss_history.append(val_loss)
+            print(f'Epoch {epoch+1}, Training Loss: {avg_loss} Validation Loss: {val_loss}')
 
 
         # Plot the loss history
-        self.data_preparation.visualize_learning_progress(self.loss_history)
+        self.data_preparation.visualize_learning_progress(self.train_loss_history, self.val_loss_history)
+
+    def validate_model(self, X_val, y_val):
+        # Similar to the evaluate_model method but returns the average loss on the validation dataset
+        val_dataset = TensorDataset(X_val, y_val)
+        val_loader = DataLoader(val_dataset, batch_size=64, shuffle=False)
+        
+        # Set model to evaluation mode
+        self.model.eval()
+        
+        total_loss = 0
+        count = 0
+        with torch.no_grad():
+            for input_features, target in val_loader:
+                y_pred = self.model(input_features)
+                loss = nn.MSELoss()(y_pred.squeeze(), target)
+                total_loss += loss.item()
+                count += 1
+        
+        return total_loss / count
 
     def evaluate_model(self, X_test, y_test):
 

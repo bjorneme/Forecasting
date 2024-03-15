@@ -21,10 +21,10 @@ class DataPreparation:
         preprocessed_data = self.preprocess_data(data)
         
         # Feature Engineering + Splitting
-        X_train, y_train, X_test, y_test = self.feature_engineering(preprocessed_data)
+        X_train, y_train, X_val, y_val, X_test, y_test = self.feature_engineering(preprocessed_data)
         
         # Return prepared data
-        return X_train, y_train, X_test, y_test
+        return X_train, y_train, X_val, y_val, X_test, y_test
 
     def load_data(self, filepath):
         return pd.read_csv(filepath)
@@ -56,13 +56,16 @@ class DataPreparation:
 
         # Split and convert to tensors
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=24, shuffle=False)
+        X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=24, shuffle=False)
         X_train_tensor = torch.tensor(X_train, dtype=torch.float32)
         y_train_tensor = torch.tensor(y_train, dtype=torch.float32)
+        X_val_tensor = torch.tensor(X_val, dtype=torch.float32)
+        y_val_tensor = torch.tensor(y_val, dtype=torch.float32)
         X_test_tensor = torch.tensor(X_test, dtype=torch.float32)
         y_test_tensor = torch.tensor(y_test, dtype=torch.float32)
 
         # Return splittet dataset
-        return X_train_tensor, y_train_tensor, X_test_tensor, y_test_tensor
+        return X_train_tensor, y_train_tensor, X_val_tensor, y_val_tensor, X_test_tensor, y_test_tensor
     
     def add_lag_features(self, scaled_features, lags):
         # Add lagged features to the DataFrame.
@@ -87,10 +90,11 @@ class DataPreparation:
         plt.legend()
         plt.show()
 
-    def visualize_learning_progress(self,loss_history):
+    def visualize_learning_progress(self,train_loss_history, val_loss_history):
         # Plot both the loss
         plt.figure(figsize=(10, 6))
-        plt.plot(loss_history, label='Training Loss')
+        plt.plot(train_loss_history, label='Training Loss')
+        plt.plot(val_loss_history, label='Validation Loss', color='orange')
         plt.title('Loss over Epochs')
         plt.xlabel('Epoch')
         plt.ylabel('Loss')

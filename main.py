@@ -15,7 +15,7 @@ if __name__ == "__main__":
         filepath="consumption_and_temperatures.csv",
         area_number=1,
         model = model,
-        num_epochs = 0,
+        num_epochs = 10,
         learning_rate = 0.001,
         model_filepath = "models/pre_trained_models/mlp_model.pth"
     )

@@ -121,7 +121,7 @@ class ForecastingSystem:
                 predictions.append(y_test_pred.numpy().flatten()[0])
 
         # Visualize the predictions vs. actual consumption
-        self.data_preparation.visualize(predictions)
+        # self.data_preparation.visualize(predictions)
 
         # Return the populated list of predictions
         return predictions
@@ -144,6 +144,8 @@ class ForecastingSystem:
     def evaluate_and_plot_models(self, model_paths, models):
         plt.figure(figsize=(10, 6))
 
+        plt.plot(self.y_test, label='Actual', color='black', linewidth=2)
+
         for model_name, model in models.items():
             self.model = model
             model_path = model_paths.get(model_name)
@@ -159,7 +161,6 @@ class ForecastingSystem:
                 
                 # Use the loaded model for evaluation
                 predictions = self.evaluate_model(self.X_test, self.y_test)
-                print(predictions)
                 plt.plot(predictions, label=model_name)
         
         plt.title("Model Comparison")

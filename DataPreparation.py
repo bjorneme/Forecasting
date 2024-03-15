@@ -11,52 +11,35 @@ class DataPreparation:
         self.filepath = filepath
         self.area_number = area_number
         self.lags = lags
-        self.scaler = MinMaxScaler(feature_range=(0,1))
+        self.scaler = MinMaxScaler(feature_range=(0, 1))
 
     def prepare_data(self):
-        # Load data
         data = self.load_data(self.filepath)
-        
-        # Preprocess data
         preprocessed_data = self.preprocess_data(data)
-        
-        # Feature Engineering + Splitting
-        X_train, y_train, X_val, y_val, X_test, y_test = self.feature_engineering(preprocessed_data)
-        
-        # Return prepared data
-        return X_train, y_train, X_val, y_val, X_test, y_test
+        return self.feature_engineering(preprocessed_data)
 
     def load_data(self, filepath):
         return pd.read_csv(filepath)
     
     def preprocess_data(self, data):
-        # Convert timestamp to datetime
         data['timestamp'] = pd.to_datetime(data['timestamp'])
-
         return data
 
-    
     def feature_engineering(self, data):
+        temperature = data[[f'NO{self.area_number}_temperature']].values
+        consumption = data[[f'NO{self.area_number}_consumption']].values
 
-        # Adding time-based features
-        data['month'] = data['timestamp'].dt.month
-        data['day'] = data['timestamp'].dt.day
-        data['hour'] = data['timestamp'].dt.hour
+        scaled_temperature = self.scaler.fit_transform(temperature)
+        scaled_consumption = self.scaler.fit_transform(consumption)
 
-        # Select Features
-        temperature_column = f'NO{self.area_number}_temperature'
-        consumption_column = f'NO{self.area_number}_consumption'
-        self.features = data[['month', 'day', 'hour', temperature_column, consumption_column]]
+        scaled_features = np.hstack((scaled_temperature, scaled_consumption))
 
-        # Normalize the data
-        self.scaled_features = self.scaler.fit_transform(self.features)
+        X, y = self.add_lag_features(scaled_features, self.lags)
 
-        # Create lags
-        X, y = self.add_lag_features(self.scaled_features, self.lags)
+        # Splitting into training, validation, and test sets
+        X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.3, random_state=42)
+        X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=24, random_state=42)
 
-        # Split and convert to tensors
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=24, shuffle=False)
-        X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=24, shuffle=False)
         X_train_tensor = torch.tensor(X_train, dtype=torch.float32)
         y_train_tensor = torch.tensor(y_train, dtype=torch.float32)
         X_val_tensor = torch.tensor(X_val, dtype=torch.float32)
@@ -64,18 +47,15 @@ class DataPreparation:
         X_test_tensor = torch.tensor(X_test, dtype=torch.float32)
         y_test_tensor = torch.tensor(y_test, dtype=torch.float32)
 
-        # Return splittet dataset
         return X_train_tensor, y_train_tensor, X_val_tensor, y_val_tensor, X_test_tensor, y_test_tensor
     
     def add_lag_features(self, scaled_features, lags):
-        # Add lagged features to the DataFrame.
         X, y = [], []
-        for i in range(len(scaled_features) - lags):
-            seq_x = scaled_features[i:i+lags, :-1]
-            seq_y = scaled_features[i+lags, -1]
-            X.append(seq_x)
-            y.append(seq_y)
+        for i in range(lags, len(scaled_features)):
+            X.append(scaled_features[i-lags:i])
+            y.append(scaled_features[i, -1])
         return np.array(X), np.array(y)
+
     
     def visualize(self, predictions):
         # Inversely scale the predictions

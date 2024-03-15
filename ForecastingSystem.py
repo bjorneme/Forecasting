@@ -9,7 +9,6 @@ from torch.utils.data import DataLoader, TensorDataset
 
 from DataPreparation import DataPreparation
 
-
 class ForecastingSystem:
     def __init__(self, filepath, area_number, model, num_epochs, learning_rate, model_filepath=None):
         self.data_preparation = DataPreparation(filepath, area_number)
@@ -28,7 +27,7 @@ class ForecastingSystem:
         self.X_test = X_test
         self.y_test = y_test
         
-        self.data_preparation.visulaize_data()
+        # self.data_preparation.visulaize_data()
 
         # Step 2: Train the model
         self.train_model(X_train, y_train, X_val, y_val)

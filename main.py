@@ -3,27 +3,14 @@ from models.LSTMModel import LSTMModel
 
 # The main function
 if __name__ == "__main__":
-    input_size = 4  # month, day, hour, temperature
 
-    model = LSTMModel(input_size, 24, 1, 2)
-    
     system = ForecastingSystem(
         filepath="consumption_and_temperatures.csv",
         area_number=1,
-        model = model,
-        num_epochs = 4,
+        model=LSTMModel(input_size=4, hidden_layer_size=24, output_size=24),
+        num_epochs = 25,
         learning_rate = 0.001,
         model_filepath = "models/pre_trained_models/lstm_model.pth"
     )
     system.run_system()
-
-    # Example usage
-    model_paths = {
-        "LSTM": "models/pre_trained_models/lstm_model.pth",
-    }
-
-    models = {
-            "LSTM": LSTMModel(4, 24, 1, 2),
-    }
-
-    system.evaluate_and_plot_models(model_paths, models)
+    system.visualize_learning_progress()

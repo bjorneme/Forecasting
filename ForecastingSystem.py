@@ -31,13 +31,11 @@ class ForecastingSystem:
         self.save_model()
 
     def train_model(self, X_train, y_train, X_val, y_val):
-        # Conceptual addition to train_model method:
-        best_val_loss = float('inf')
-        patience_counter = 0
-        patience = 2
 
         # Initialize a list to store training loss
         self.train_loss_history = []
+        # Initialize a list to store validation loss
+        self.val_loss_history = []
         
         # Create dataset from the training data
         train_dataset = TensorDataset(X_train, y_train)
@@ -50,9 +48,6 @@ class ForecastingSystem:
 
         # Initialize the optimizer with model parameters and learning rate
         optimizer = torch.optim.Adam(self.model.parameters(), self.learning_rate, weight_decay=1e-5)
-
-        # After initializing the optimizer in the train_model method:
-        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.95)
         
         # Set the model to training mod
         self.model.train()
@@ -78,34 +73,20 @@ class ForecastingSystem:
 
                 # Update model parameters based on gradients
                 optimizer.step()
-                scheduler.step()
 
                 # Append the loss of this batch
                 self.loss_history_epoch.append(loss.item())
 
             # Append average loss of the epoch. Used for visualization
-            avg_loss = sum(self.loss_history_epoch)/len(train_loader)
-            self.train_loss_history.append(avg_loss)
+            total_train_loss = sum(self.loss_history_epoch)/len(train_loader)
+            self.train_loss_history.append(total_train_loss)
 
             # Validate the model
-            val_loss = self.validate_model(X_val, y_val)
+            total_val_loss = self.validate_model(X_val, y_val)
 
-            print(f'Epoch {epoch+1}, Training Loss: {avg_loss} Validation Loss: {val_loss}')
-
-            # At the end of each epoch, check if validation loss has improved
-            if val_loss < best_val_loss:
-                best_val_loss = val_loss
-                patience_counter = 0  # Reset counter if validation loss improves
-            else:
-                patience_counter += 1
-            if patience_counter > patience:
-                print("Stopping early due to increasing validation loss.")
-                break  # Break out of the loop if patience limit exceeded
+            print(f'Epoch {epoch+1}, Training Loss: {total_train_loss} Validation Loss: {total_val_loss}')
 
     def validate_model(self,  X_val, y_val):
-
-        # Initialize a list to store validation loss
-        self.val_loss_history = []
 
         # Create dataset from the validation data
         val_dataset = TensorDataset(X_val, y_val)
@@ -134,9 +115,10 @@ class ForecastingSystem:
                 total_loss += loss.item()
 
         # Append total loss from validation. Used for visualization
-        self.val_loss_history.append(total_loss)
+        total_val_loss = total_loss/len(val_loader)
+        self.val_loss_history.append(total_val_loss)
         
-        return total_loss
+        return total_val_loss
     
     def evaluate(self, X_test, y_test):
         self.model.eval()

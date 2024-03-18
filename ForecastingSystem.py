@@ -167,5 +167,5 @@ class ForecastingSystem:
         plt.grid(True)
         plt.show()
 
-        
-
+    def visualize_dataset(self):
+        self.data_preparation.visualize_dataset()

@@ -15,7 +15,7 @@ class DataPreparation:
     def prepare_data(self):
         # Step 1: Load the data
         data = pd.read_csv('consumption_and_temperatures.csv')
-        print(data.shape)
+        self.data = data # Saved for plotting
 
         # Step 2: Add hour, day, month
         data['timestamp'] = pd.to_datetime(data['timestamp'])
@@ -76,3 +76,32 @@ class DataPreparation:
             y.append(train_target.flatten())
 
         return np.array(X), np.array(y)
+    
+    def visualize_dataset(self):
+        # Ensure the figure and axes are clearly defined for dual y-axes plotting
+        fig, ax1 = plt.subplots(figsize=(12, 6))
+
+        # Assuming 'timestamp' is the column with datetime values in your dataset
+        timestamp = self.data['timestamp']
+
+        # Plotting electricity consumption on the primary y-axis
+        consumption_col = f'NO{self.area_number}_consumption'
+        ax1.plot(timestamp, self.data[consumption_col], label=f'Area {self.area_number} Consumption', color='blue')
+        ax1.set_xlabel('Time')
+        ax1.set_ylabel('Consumption', color='blue')
+        ax1.tick_params(axis='y', labelcolor='blue')
+        ax1.legend(loc='upper left')
+
+        # Creating a secondary y-axis for temperature plotting
+        ax2 = ax1.twinx()
+        temperature_col = f'NO{self.area_number}_temperature'
+        ax2.plot(timestamp, self.data[temperature_col], label=f'Area {self.area_number} Temperature', color='red')
+        ax2.set_ylabel('Temperature', color='red')
+        ax2.tick_params(axis='y', labelcolor='red')
+        ax2.legend(loc='upper right')
+
+        # Formatting the x-axis to show dates properly
+        fig.autofmt_xdate()  # Auto-format date labels for better readability
+
+        plt.title(f'Electricity Consumption and Temperature Trends for Area {self.area_number}')
+        plt.show()

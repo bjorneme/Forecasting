@@ -33,7 +33,6 @@ class DataPreparation:
 
         # Step 4: Scale features and target
         scaled_features = self.scaler.fit_transform(features)
-
         scaled_target = self.scaler.fit_transform(target)
 
         # Step 5: Create sequence. Reserve last 24 hours for testing

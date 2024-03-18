@@ -1,4 +1,5 @@
 from matplotlib import pyplot as plt
+import numpy as np
 from DataPreparation import DataPreparation
 
 import torch
@@ -20,12 +21,14 @@ class ForecastingSystem:
     def run_system(self):
         # Step 1: Prepare the data
         X_train, y_train,  X_val, y_val, X_test, y_test = self.data_preparation.prepare_data()
+        self.X_test = X_test
+        self.y_test = y_test
         
         # Step 2: Train the model
         self.train_model(X_train, y_train, X_val, y_val)
 
         # Step 3: Evaluate the model
-        self.evaluate(X_test, y_test)
+        # self.evaluate_model(X_test, y_test)
 
         # Step 4: Save the trained model to a file
         self.save_model()
@@ -120,14 +123,13 @@ class ForecastingSystem:
         
         return total_val_loss
     
-    def evaluate(self, X_test, y_test):
+    def evaluate_model(self, X_test, y_test):
         self.model.eval()
         with torch.no_grad():
             # Predicting the next 24 hours
             y_pred = self.model(X_test.unsqueeze(0))
 
-        # Plot predicted vs. actual values
-        self.plot_actual_vs_predicted(y_test, y_pred[0])
+        return y_pred
 
     def save_model(self):
         # Saves the trained model
@@ -155,17 +157,52 @@ class ForecastingSystem:
         plt.legend()
         plt.show()
 
-    def plot_actual_vs_predicted(self, actual, predicted):
-        # Plotting predicted vs. actual values
-        plt.figure(figsize=(10, 6))
-        plt.plot(predicted, label='Predicted', color='blue', marker='o')
-        plt.plot(actual, label='Actual', color='red', marker='x')
-        plt.title('Predicted vs. Actual Consumption')
-        plt.xlabel('Hour')
-        plt.ylabel('Normalized Consumption')
-        plt.legend()
-        plt.grid(True)
-        plt.show()
-
     def visualize_dataset(self):
         self.data_preparation.visualize_dataset()
+
+    def evaluate_and_plot_models(self, model_paths, models):
+        # Create figure and axes for subplots
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 5))
+
+        # Plot actual values on the first subplot
+        ax1.plot(self.y_test, label='Actual', color='black', linewidth=2)
+        ax1.set_title("Model Predictions vs Actual")
+        ax1.set_xlabel("Time")
+        ax1.set_ylabel("Value")
+        ax1.legend()
+
+        for model_name, model in models.items():
+            self.model = model
+            model_path = model_paths.get(model_name)
+            if model_path:
+                try:
+                    self.load_model(model_path)
+                    print(f"Model {model_name} loaded successfully from {model_path}.")
+                except FileNotFoundError:
+                    print(f"Model file not found at {model_path}. Skipping {model_name}.")
+                    continue
+                
+                # Use the loaded model for evaluation
+                predictions = self.evaluate_model(self.X_test, self.y_test)
+                print(predictions[0].shape)
+                ax1.plot(predictions[0], label=f'{model_name} Predictions')
+
+                # Calculate error
+                error = np.abs(predictions[0] - self.y_test.squeeze().numpy())
+
+                # Plot error on the second subplot
+                ax2.plot(error, label=f'{model_name} Error')
+
+        ax2.set_title("Error for Each Model")
+        ax2.set_xlabel("Time")
+        ax2.set_ylabel("Absolute Error")
+        ax2.legend()
+
+        # Show the plots
+        plt.tight_layout()
+        plt.show()
+
+
+
+
+

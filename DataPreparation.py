@@ -4,6 +4,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 import torch
+import matplotlib.dates as mdates
 
 # Class for preparing dataset
 class DataPreparation:
@@ -11,6 +12,7 @@ class DataPreparation:
         self.filepath = filepath
         self.area_number = area_number
         self.n_lags = n_lags
+        self.scaler = MinMaxScaler(feature_range=(0, 1))
 
     def prepare_data(self):
         # Step 1: Load the data
@@ -30,11 +32,9 @@ class DataPreparation:
         target = data[consumption].values.reshape(-1, 1)
 
         # Step 4: Scale features and target
-        scaler_features = MinMaxScaler(feature_range=(0, 1))
-        scaled_features = scaler_features.fit_transform(features)
+        scaled_features = self.scaler.fit_transform(features)
 
-        scaler_target = MinMaxScaler(feature_range=(0, 1))
-        scaled_target = scaler_target.fit_transform(target)
+        scaled_target = self.scaler.fit_transform(target)
 
         # Step 5: Create sequence. Reserve last 24 hours for testing
         X_train, y_train = self.create_sequences(scaled_features[:-self.n_lags], scaled_target[:-self.n_lags]) 
@@ -76,32 +76,53 @@ class DataPreparation:
             y.append(train_target.flatten())
 
         return np.array(X), np.array(y)
-    
+
     def visualize_dataset(self):
-        # Ensure the figure and axes are clearly defined for dual y-axes plotting
-        fig, ax1 = plt.subplots(figsize=(12, 6))
+        fig, axs = plt.subplots(2, 1, figsize=(15, 10))  # 2 rows, 1 column
 
-        # Assuming 'timestamp' is the column with datetime values in your dataset
+        # Original Data
         timestamp = self.data['timestamp']
-
-        # Plotting electricity consumption on the primary y-axis
         consumption_col = f'NO{self.area_number}_consumption'
-        ax1.plot(timestamp, self.data[consumption_col], label=f'Area {self.area_number} Consumption', color='blue')
-        ax1.set_xlabel('Time')
+        temperature_col = f'NO{self.area_number}_temperature'
+
+        # Plot original data
+        ax1 = axs[0]
+        ax1.plot(timestamp, self.data[consumption_col], label='Consumption', color='blue')
         ax1.set_ylabel('Consumption', color='blue')
         ax1.tick_params(axis='y', labelcolor='blue')
-        ax1.legend(loc='upper left')
-
-        # Creating a secondary y-axis for temperature plotting
-        ax2 = ax1.twinx()
-        temperature_col = f'NO{self.area_number}_temperature'
-        ax2.plot(timestamp, self.data[temperature_col], label=f'Area {self.area_number} Temperature', color='red')
+        
+        ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
+        ax2.plot(timestamp, self.data[temperature_col], label='Temperature', color='red')
         ax2.set_ylabel('Temperature', color='red')
         ax2.tick_params(axis='y', labelcolor='red')
+        
+        ax1.legend(loc='upper left')
         ax2.legend(loc='upper right')
+        ax1.set_title('Original Consumption and Temperature')
 
-        # Formatting the x-axis to show dates properly
+        # Normalize Data
+        normalized_data = self.scaler.fit_transform(self.data[[consumption_col, temperature_col]])
+
+        # Plot normalized data
+        ax1n = axs[1]
+        ax1n.plot(timestamp, normalized_data[:, 0], label='Normalized Consumption', color='blue')
+        ax1n.set_ylabel('Normalized Consumption', color='blue')
+        ax1n.tick_params(axis='y', labelcolor='blue')
+
+        ax2n = ax1n.twinx()
+        ax2n.plot(timestamp, normalized_data[:, 1], label='Normalized Temperature', color='red')
+        ax2n.set_ylabel('Normalized Temperature', color='red')
+        ax2n.tick_params(axis='y', labelcolor='red')
+
+        ax1n.legend(loc='upper left')
+        ax2n.legend(loc='upper right')
+        ax1n.set_title('Normalized Consumption and Temperature')
+
+        # Formatting
+        for ax in [ax1, ax1n]:
+            ax.xaxis.set_major_locator(mdates.YearLocator())
+            ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
+        
         fig.autofmt_xdate()  # Auto-format date labels for better readability
-
-        plt.title(f'Electricity Consumption and Temperature Trends for Area {self.area_number}')
+        plt.tight_layout()
         plt.show()

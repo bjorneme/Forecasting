@@ -13,8 +13,8 @@ class MLPModel(nn.Module):
         self.flatten = nn.Flatten()
         self.linear1 = nn.Linear(self.input_size, self.hidden_layer_size)
         self.relu = nn.ReLU()
-        self.linear2 = nn.Linear(self.hidden_layer_size, self.hidden_layer_size // 2)
-        self.output = nn.Linear(self.hidden_layer_size // 2, self.output_size)
+        self.linear2 = nn.Linear(self.hidden_layer_size, self.hidden_layer_size)
+        self.output = nn.Linear(self.hidden_layer_size, self.output_size)
 
     def forward(self, x):
         # Forward pass through the network.

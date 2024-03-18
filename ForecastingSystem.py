@@ -164,8 +164,11 @@ class ForecastingSystem:
         # Create figure and axes for subplots
         fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 5))
 
+        # Inverse transform the actual values for plotting
+        actual_values = self.data_preparation.scaler.inverse_transform(self.y_test)
+
         # Plot actual values on the first subplot
-        ax1.plot(self.y_test, label='Actual', color='black', linewidth=2)
+        ax1.plot(actual_values, label='Actual', color='black', linewidth=2)
         ax1.set_title("Model Predictions vs Actual")
         ax1.set_xlabel("Time")
         ax1.set_ylabel("Value")
@@ -184,11 +187,15 @@ class ForecastingSystem:
                 
                 # Use the loaded model for evaluation
                 predictions = self.evaluate_model(self.X_test, self.y_test)
-                print(predictions[0].shape)
-                ax1.plot(predictions[0], label=f'{model_name} Predictions')
+                # Ensure predictions are reshaped appropriately for inverse transformation
+                predictions_reshaped = predictions.reshape(-1, 1)
+                predictions_inverse = self.data_preparation.scaler.inverse_transform(predictions_reshaped)
+
+                # Plot the inverse-transformed predictions
+                ax1.plot(predictions_inverse, label=f'{model_name} Predictions')
 
                 # Calculate error
-                error = np.abs(predictions[0] - self.y_test.squeeze().numpy())
+                error = np.abs(predictions_inverse.squeeze() - actual_values.squeeze())
 
                 # Plot error on the second subplot
                 ax2.plot(error, label=f'{model_name} Error')
@@ -201,8 +208,3 @@ class ForecastingSystem:
         # Show the plots
         plt.tight_layout()
         plt.show()
-
-
-
-
-

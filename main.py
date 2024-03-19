@@ -12,12 +12,12 @@ if __name__ == "__main__":
         forcast_range=24,
         num_lags=24,
         # model=LSTMModel(input_size=4, hidden_layer_size=100, output_size=24),
-        model=MLPModel(input_size=4, hidden_layers=[32, 32], output_size=24, forcast_range=24),
-        # model=CNNModel(sequence_length=24, output_size=24),
+        # model=MLPModel(input_size=4, hidden_layers=[1024, 1024, 1024, 1024, 1024], output_size=24, forcast_range=24),
+        model=CNNModel(sequence_length=24, output_size=24),
         num_epochs = 10,
         learning_rate = 0.001,
         # model_filepath = "models/pre_trained_models/lstm_model.pth"
-        model_filepath = "models/pre_trained_models/mlp_model.pth"
+        model_filepath = "models/pre_trained_models/cnn_model.pth"
         # model_filepath = "models/pre_trained_models/cnn_model.pth"
     )
     system.run_system()
@@ -34,7 +34,7 @@ if __name__ == "__main__":
 
     models = {
             "LSTM": LSTMModel(input_size=4, hidden_layer_size=100, output_size=24),
-            "MLP": MLPModel(input_size=4, hidden_layers=[32,32], output_size=24, forcast_range=24),
+            "MLP": MLPModel(input_size=4, hidden_layers=[1024, 1024, 1024, 1024, 1024], output_size=24, forcast_range=24),
             "CNN": CNNModel(sequence_length=24, output_size=24),
     }
 

@@ -55,12 +55,6 @@ class DataPreparation:
         y_val_tensor = torch.tensor(y_val, dtype=torch.float32)
         X_test_tensor = torch.tensor(X_test, dtype=torch.float32)
         y_test_tensor = torch.tensor(y_test, dtype=torch.float32)
-        print(X_train_tensor.shape)
-        print(y_train_tensor.shape)
-        print(X_val_tensor.shape)
-        print(y_val_tensor.shape)
-        print(X_test_tensor.shape)
-        print(y_test_tensor.shape)
  
         return X_train_tensor, y_train_tensor, X_val_tensor, y_val_tensor, X_test_tensor, y_test_tensor
     
@@ -80,7 +74,7 @@ class DataPreparation:
         return np.array(X), np.array(y)
 
     def visualize_dataset(self):
-        fig, axs = plt.subplots(2, 1, figsize=(15, 10))  # 2 rows, 1 column
+        fig, axs = plt.subplots(2, 1, figsize=(15, 10))
 
         # Original Data
         timestamp = self.data['timestamp']
@@ -93,7 +87,7 @@ class DataPreparation:
         ax1.set_ylabel('Consumption', color='blue')
         ax1.tick_params(axis='y', labelcolor='blue')
         
-        ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
+        ax2 = ax1.twinx()
         ax2.plot(timestamp, self.data[temperature_col], label='Temperature', color='red')
         ax2.set_ylabel('Temperature', color='red')
         ax2.tick_params(axis='y', labelcolor='red')
@@ -125,6 +119,6 @@ class DataPreparation:
             ax.xaxis.set_major_locator(mdates.YearLocator())
             ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
         
-        fig.autofmt_xdate()  # Auto-format date labels for better readability
+        fig.autofmt_xdate()
         plt.tight_layout()
         plt.show()

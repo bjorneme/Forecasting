@@ -46,7 +46,7 @@ class ForecastingSystem:
         train_dataset = TensorDataset(X_train, y_train)
         
         # Create data loader for batch processing and shuffling
-        train_loader = DataLoader(train_dataset, batch_size=512, shuffle=True)
+        train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
 
         # Define loss function as MSE
         loss_function = nn.MSELoss()
@@ -59,7 +59,7 @@ class ForecastingSystem:
 
         # Iterate over the dataset for a defined number of epochs
         for epoch in range(self.num_epochs):
-            self.loss_history_epoch = []
+            total_loss = 0
 
             # Loop over batches of data from the data loader
             for X_batch, y_batch in train_loader:
@@ -79,11 +79,10 @@ class ForecastingSystem:
                 # Update model parameters based on gradients
                 optimizer.step()
 
-                # Append the loss of this batch
-                self.loss_history_epoch.append(loss.item())
+                total_loss += loss.item()
 
             # Append average loss of the epoch. Used for visualization
-            total_train_loss = sum(self.loss_history_epoch)/len(train_loader)
+            total_train_loss = total_loss/len(train_loader)
             self.train_loss_history.append(total_train_loss)
 
             # Validate the model

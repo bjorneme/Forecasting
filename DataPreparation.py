@@ -8,10 +8,13 @@ import matplotlib.dates as mdates
 
 # Class for preparing dataset
 class DataPreparation:
-    def __init__(self, filepath, area_number=1, n_lags=24):
+    def __init__(self, filepath, area_number=1, forcast_range = 24, num_lags=24):
+
+        # Initialize necessary parameters
         self.filepath = filepath
         self.area_number = area_number
-        self.n_lags = n_lags
+        self.forcast_range = forcast_range
+        self.n_lags = num_lags
         self.scaler = MinMaxScaler(feature_range=(0, 1))
 
     def prepare_data(self):
@@ -36,11 +39,11 @@ class DataPreparation:
         scaled_target = self.scaler.fit_transform(target)
 
         # Step 5: Create sequence. Reserve last 24 hours for testing
-        X_train, y_train = self.create_sequences(scaled_features[:-self.n_lags], scaled_target[:-self.n_lags]) 
+        X_train, y_train = self.create_sequences(scaled_features[:-self.forcast_range], scaled_target[:-self.forcast_range]) 
 
-        # Step 6: Use the n_lags last hours as input to predict the next n_lags hours
-        X_test = scaled_features[-self.n_lags:]
-        y_test = scaled_target[-self.n_lags:] 
+        # Step 6: Use the n_lags last hours as input to predict the next forcast_range hours
+        X_test = scaled_features[-self.forcast_range:]
+        y_test = scaled_target[-self.forcast_range:] 
 
         # Split into training and validation set
         X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.1, shuffle=True)
@@ -61,15 +64,15 @@ class DataPreparation:
  
         return X_train_tensor, y_train_tensor, X_val_tensor, y_val_tensor, X_test_tensor, y_test_tensor
     
-    def create_sequences(self, input_data, target_data, forecast_horizon=24):
+    def create_sequences(self, input_data, target_data):
         X, y = [], []
 
         # Iterate over the traning dataset
-        for i in range(len(input_data) - self.n_lags - forecast_horizon + 1):
+        for i in range(len(input_data) - self.n_lags - self.forcast_range + 1):
             # Extract a sequence of n_lags
             train_input = input_data[i:i+self.n_lags]
             # Extract the target sequence of forecast_horizon
-            train_target = target_data[i+self.n_lags:i+self.n_lags+forecast_horizon]
+            train_target = target_data[i+self.n_lags:i+self.n_lags+self.forcast_range]
 
             X.append(train_input)
             y.append(train_target.flatten())

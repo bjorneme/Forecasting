@@ -7,8 +7,10 @@ import torch.nn as nn
 from torch.utils.data import TensorDataset, DataLoader
 
 class ForecastingSystem:
-    def __init__(self, filepath, area_number, model, num_epochs = 10, learning_rate = 0.001, model_filepath=None):
-        self.data_preparation = DataPreparation(filepath, area_number)
+    def __init__(self, filepath, area_number, forcast_range, num_lags, model, num_epochs = 10, learning_rate = 0.001, model_filepath=None):
+        
+        # Initialize necessary parameters
+        self.data_preparation = DataPreparation(filepath, area_number, forcast_range, num_lags)
         self.model = model
         self.num_epochs = num_epochs
         self.learning_rate = learning_rate
@@ -124,7 +126,10 @@ class ForecastingSystem:
         return total_val_loss
     
     def evaluate_model(self, X_test, y_test):
+        # Set to evaluation mode
         self.model.eval()
+
+        # Disable gradient computation
         with torch.no_grad():
             # Predicting the next 24 hours
             y_pred = self.model(X_test.unsqueeze(0))
@@ -135,16 +140,16 @@ class ForecastingSystem:
         # Saves the trained model
         if self.model_filepath:
             torch.save(self.model.state_dict(), self.model_filepath)
-            print(f"Model saved to {self.model_filepath}")
+            print(f"Model saved: {self.model_filepath}")
 
     def load_model(self, model_filepath):
         # Loads a pre-trained model
         try:
             self.model.load_state_dict(torch.load(model_filepath))
             self.model.eval()
-            print(f"Model loaded from {model_filepath}")
+            print(f"Model loaded: {model_filepath}")
         except FileNotFoundError:
-            print(f"No pre-trained model found at {model_filepath}.")
+            print(f"Pre-trained model not found: {model_filepath}.")
 
     def visualize_learning_progress(self):
         # Plot both the loss

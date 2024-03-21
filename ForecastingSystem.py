@@ -178,20 +178,24 @@ class ForecastingSystem:
         ax1.set_ylabel("Value")
         ax1.legend()
 
+        # Iterate and plot all the models
         for model_name, model in models.items():
             self.model = model
             model_path = model_paths.get(model_name)
             if model_path:
+                
+                # Load the model
                 try:
                     self.load_model(model_path)
-                    print(f"Model {model_name} loaded successfully from {model_path}.")
+                    print(f"Model {model_name} loaded successfully: {model_path}.")
                 except FileNotFoundError:
-                    print(f"Model file not found at {model_path}. Skipping {model_name}.")
+                    print(f"Model not found: {model_path}")
                     continue
                 
-                # Use the loaded model for evaluation
+                # Evaluate the model and return prediction
                 predictions = self.evaluate_model(self.X_test, self.y_test)
-                # Ensure predictions are reshaped appropriately for inverse transformation
+
+                # Reshape and inverse transform predictions
                 predictions_reshaped = predictions.reshape(-1, 1)
                 predictions_inverse = self.data_preparation.scaler.inverse_transform(predictions_reshaped)
 
